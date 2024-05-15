@@ -36,6 +36,79 @@ node todo{
 }
 
 '''
+Build the sub-graph of session node
+'''
+walker query{
+
+    can create_subgraph with session entry{
+        user_data : dict = here.user_data;
+        todo_list : list = here.todo_list;
+        end = here;
+        end ++> (end := router());
+        end ++> rag();
+        end ++> user_qa(user_data = user_data);
+        end ++> user_todo(todo_list = todo_list);
+
+        visit end; #end is router node
+    }
+}
+
+'''
+Gets a specific user input from user (RAG,QA,TODO) and direct the walker to the
+correct functional node
+'''
+node router{
+    can choose_route with query entry{
+        a = "Choose One (RAG,QA,TODO): " |> input;
+        if(a.lower() == "rag"){
+            visit [-->](`?rag)[0];
+        }
+        elif(a.lower() == "qa"){
+            visit [-->](`?user_qa)[0];
+        }
+        elif(a.lower() == "todo"){
+            visit [-->](`?user_todo)[0];
+        }
+        else{
+            "Invalid Input!" |> print;
+        }
+    }
+    
+}
+
+'''
+This node will be implemented in the coming weeks of the assignment
+'''
+node rag{
+    can res with query entry{
+        "I am RAG" |> print;
+    }
+
+}
+
+'''
+This node will be implemented in the coming weeks of the assignment
+'''
+node user_qa{
+    has user_data : dict = {};
+    
+    can res with query entry{
+        "I will respond using user data " + str(self.user_data) |> print;
+    }
+}
+
+'''
+This node will be implemented in the coming weeks of the assignment
+'''
+node user_todo{
+    has todo_list : list = [];
+    
+    can res with query entry{
+        "I will respond using a user to-do list " + str(self.todo_list) |> print;
+    }
+}
+
+'''
 This is the chat walker which will be used to chat with the user.
 The create_session ability:
     - gather the user data and todo list from connected nodes using filters.
@@ -56,6 +129,8 @@ walker chat{
                             user_data = data_node.user_data,
                             todo_list = todo_node.todo_list
                         );
+
+        query() spawn [-->](`?session)[0];
         visit n;
     }
 
