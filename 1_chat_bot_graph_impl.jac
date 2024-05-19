@@ -164,5 +164,5 @@ with entry {
                      todo_list=["Do heart surgery",
                                 "Buy Bread",
                                 "Have pizza for dinner"]
-                ) spawn root;
+                ) spawn root
 }

@@ -66,3 +66,9 @@ The walker should:
 - **User_QA :** This node will be implemented in coming weeks of the assignment. For now, when the query walker enters this node, it should print "I will respond using user data." and the ```user_data``` gathered in the session node.
 
 - **TODO nodes :** This node will be implemented in coming weeks of the assignment. For now, when the query walker enters this node, it should print "I will respond using user to-do list." and the ```todo``` gathered in the session node.
+
+
+# Side Projects
+
+## Pre provided story based QA
+A small chatbot is trained by a story I previously provided and it can answer your questions.
