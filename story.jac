@@ -2,7 +2,7 @@ import:py from jaclang.core.llms, Anthropic;
 
 glob llm = Anthropic(model_name="claude-3-sonnet-20240229");
 
-glob desc: str = "I'm Anuja Kalhara, the head honcho of DevSquare, and let me tell you, we run this town."
+glob desc: str = "I'm Anuja Kalhara, a fearless man, the head honcho of DevSquare, and let me tell you, we run this town."
 "Me and my crew, we're like a pack of wolves, tearing through the streets and leaving our mark wherever we go."
 "Dilanka? That dude's got charm for days. He could talk a nun into a poker game, I swear."
 "Then there's Nimesh, the tech wizard. He's like a freakin' magician with computers,"

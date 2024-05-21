@@ -72,3 +72,4 @@ The walker should:
 
 ## Pre provided story based QA
 A small chatbot is trained by a story I previously provided and it can answer your questions.
+Remember to add your **ANTHROPIC_API_KEY** to env for chatbot to work. 
