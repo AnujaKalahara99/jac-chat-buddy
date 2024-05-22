@@ -74,11 +74,14 @@ The init_query_engine ability:
 walker query{
     has query:str = '';
     has user_session_id:str='';
-    has session_chat_history:list=[];
+    has session_chat_history: 'The chat history of the user. Odd indexes are user questions and even indexes are llm answers':list=[];
     has user_data: 'data about the health status of the user' :dict={};
     has todo_list: 'The tasks to be done by the user in the future.' :list=[];
 
     can init_query_engine with session entry;
+    can ask_query;
+    can 'If user asked to close the application rturn true'
+        CheckIfClose(input: 'User input': str) -> 'True or False': bool by llm();
 }
 
 '''
@@ -95,7 +98,7 @@ TODO:Not yet implemented.
 '''
 node RAG_chat {
     can run_RAG with query entry {
-        print('routed --> RAG');
+
     }
 }
 
@@ -104,13 +107,20 @@ This is the TODO chat node which will be used to chat with the user using the to
 '''
 node todo_chat {
     can run_todo with query entry {
-        print('routed --> TODO');
-        print(self.chat_llm(todo_list=here.todo_list,query=here.query));
+        a:str = self.chat_llm(todo_list=here.todo_list, user_data=here.user_data, previous_chat=here.session_chat_history,
+                            query=here.query);
+        print(a);
+        here.session_chat_history.append(a);
+        here.ask_query();
+        if(here.query != 'exit0'){
+            self.run_todo(here);
+        }
     }
 
     can 'You are a Health Assistant. Give a response based on the query using my todo list.'
-    chat_llm(todo_list:'data about the health status of the user':list,
-             query:'The tasks to be done by the user in the future.':str) -> 'response':str by llm();
+    chat_llm(todo_list:'data about the health status of the user':list, user_data:'data about user information': dict,
+            previous_chat:'The chat history of the user. Odd indexes are user questions and even indexes are llm answers':str,
+            query:'The tasks to be done by the user in the future.':str) -> 'response':str by llm();
 }
 
 '''
@@ -119,8 +129,17 @@ TODO:Not yet implemented.
 '''
 node user_qa_chat {
     can run_user_qa with query entry {
-        print('routed --> USER_QA');
+        a:str = self.chat_llm(here.user_data, here.session_chat_history, here.query);
+        print(a);
+        here.session_chat_history.append(a);
+        here.ask_query();
+        self.run_user_qa(here);
     }
+
+    can 'You are a Health Assistant. Give a response based on the query using my todo list.'
+    chat_llm(user_data:'data about user information': dict, 
+            previous_chat:'The chat history of the user. Odd indexes are user questions and even indexes are llm answers':str,
+            query:'The tasks to be done by the user in the future.':str) -> 'response':str by llm();
 }
 
 with entry {
@@ -169,7 +188,7 @@ with entry {
     self.user_data:dict = here.user_data;
     self.todo_list:list = here.todo_list;
     self.task_type:str = input('What is the routing method : ');
-    self.query:str = input('Enter your query : ');
+    self.ask_query();
 
     end = here;
     end ++> (end := router());
@@ -180,13 +199,27 @@ with entry {
     visit [-->];
 }
 
+:walker:query:can:ask_query {
+    self.query:str = input('Enter your query : ');
+    self.session_chat_history.append(self.query);
+
+    if self.CheckIfClose(self.query) {
+        print("Exiting the chat session");
+        self.query:str = 'exit0';
+        disengage;
+    }
+}
+
 :node:router:can:route {
     task:str = here.task_type;
     if task == 'RAG' {
+        print('routed --> USER_RAG');
         visit [-->](`?RAG_chat);
     } elif task == 'QA'{
+        print('routed --> USER_QA');
         visit [-->](`?user_qa_chat);
     } elif task == 'TODO' {
+        print('routed --> USER_TODO');
         visit [-->](`?todo_chat);
     }
 }
